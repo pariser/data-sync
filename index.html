@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+
+    <style>
+      .row {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
+
+      <div class="page-header">
+        <ul class="nav nav-pills pull-right">
+          <!-- <li class="active"><a href="#">Home</a></li> -->
+          <!-- <li><a href="#">About</a></li> -->
+          <!-- <li><a href="#">Contact</a></li> -->
+        </ul>
+        <h1>Data-Sync</h1>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <form id="new_content" class="form-signin">
+            <textarea name="upload" class="form-control" required autofocus></textarea>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Send</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <ul id="old_content" class="list-group"></ul>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+
+    <script type='text/javascript'>
+      $(document).ready(function() {
+        var myRootRef = new Firebase("https://pariser.firebaseio.com");
+
+        $('#new_content').submit(function(e) {
+          e.preventDefault();
+
+          var content = $('[name=upload]').val();
+          if (!content) return;
+
+          console.log("uploading content: ", content);
+          myRootRef.push({content: content});
+          $('[name=upload]').text('');
+        });
+
+        myRootRef.limit(10).on('child_added', function(snapshot) {
+          var node = snapshot.val();
+          console.log("child_added with content: ", node.content);
+          $('#old_content').prepend(
+            $('<li class="list-group-item">' + node.content + '</li>')
+          );
+        });
+      });
+    </script>
+  </body>
+</html>
