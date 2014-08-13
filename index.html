@@ -49,22 +49,32 @@
       $(document).ready(function() {
         var myRootRef = new Firebase("https://pariser.firebaseio.com");
 
+        var isUrlRegex = new RegExp('^(?!mailto:)(?:(?:http|https|ftp)://)(?:\\S+(?::\\S*)?@)?(?:(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[0-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))|localhost)(?::\\d{2,5})?(?:(/|\\?|#)[^\\s]*)?$');
+
+        var linkifyContent = function(content) {
+          var contentParts = content.split(' ');
+          for (var i = 0, n = contentParts.length; i < n; i++) {
+            if (contentParts[i].match(isUrlRegex)) {
+              contentParts[i] = '<a href="' + contentParts[i] + '" target="_blank">' + contentParts[i] + '</a>';
+            }
+          }
+          return contentParts.join(" ");
+        };
+
         $('#new_content').submit(function(e) {
           e.preventDefault();
 
           var content = $('[name=upload]').val();
           if (!content) return;
 
-          console.log("uploading content: ", content);
           myRootRef.push({content: content});
           $('[name=upload]').text('');
         });
 
         myRootRef.limit(10).on('child_added', function(snapshot) {
           var node = snapshot.val();
-          console.log("child_added with content: ", node.content);
           $('#old_content').prepend(
-            $('<li class="list-group-item">' + node.content + '</li>')
+            $('<li class="list-group-item">' + linkifyContent(node.content) + '</li>')
           );
         });
       });
